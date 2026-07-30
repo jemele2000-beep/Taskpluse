@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskPulse - Smart Task & Night Shift Sleep Tracker</title>
+    
+    <!-- PWA Requirements -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3176/3176366.png">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --whatsapp-color: #25D366;
+            --whatsapp-hover: #1da851;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* Main Content Area */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        /* Night Shift Widget Banner */
+        .night-shift-card {
+            background: linear-gradient(135deg, #312e81, #1e1b4b);
+            border: 1px solid #4338ca;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .night-shift-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            color: #c7d2fe;
+            margin-bottom: 15px;
+        }
+
+        .sleep-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input, select, button {
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            outline: none;
+        }
+
+        button.btn-primary {
+            background-color: var(--accent-color);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button.btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button.btn-whatsapp {
+            background-color: var(--whatsapp-color);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        button.btn-whatsapp:hover {
+            background-color: var(--whatsapp-hover);
+        }
+
+        /* Status Share Box */
+        .status-output {
+            margin-top: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .status-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* Add Task Form */
+        .add-task-card {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-task-card input[type="text"] {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        /* Task List */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-item {
+            background-color: var(--bg-secondary);
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.1s;
+        }
+
+        .task-item.priority-High { border-left-color: var(--danger); }
+        .task-item.priority-Medium { border-left-color: var(--warning); }
+        .task-item.priority-Low { border-left-color: var(--success); }
+
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .task-left input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="logo">
+            <i class="fa-solid fa-bolt"></i> TaskPulse
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active"><i class="fa-solid fa-list-check"></i> All Tasks</li>
+            <li class="nav-item"><i class="fa-solid fa-moon"></i> Night Shift Mode</li>
+        </ul>
+    </aside>
+
+    <!-- Main Section -->
+    <main>
+        <!-- Night-Shift Sleep Tracker Feature -->
+        <div class="night-shift-card">
+            <div class="night-shift-header">
+                <i class="fa-solid fa-bed"></i> Night-Worker Daytime Sleep Status Generator
+            </div>
+            <div class="sleep-form">
+                <div class="input-group">
+                    <label>Going to Sleep At</label>
+                    <input type="time" id="sleepStart" value="07:00">
+                </div>
+                <div class="input-group">
+                    <label>Waking Up At</label>
+                    <input type="time" id="sleepEnd" value="15:00">
+                </div>
+                <button class="btn-primary" onclick="generateSleepStatus()">
+                    <i class="fa-solid fa-gears"></i> Generate Status
+                </button>
+            </div>
+
+            <div class="status-output" id="statusOutput">
+                <p id="statusMessage" style="font-size: 0.95rem; line-height: 1.4;"></p>
+                <div class="status-actions">
+                    <button class="btn-primary" onclick="copyStatus()">
+                        <i class="fa-solid fa-copy"></i> Copy Text
+                    </button>
+                    <button class="btn-whatsapp" onclick="shareToWhatsApp()">
+                        <i class="fa-brands fa-whatsapp"></i> Share to WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <h2 class="header-title">My Tasks</h2>
+        <div class="add-task-card">
+            <input type="text" id="taskTitle" placeholder="What needs to be done?">
+            <select id="taskPriority">
+                <option value="Low">Priority: Low</option>
+                <option value="Medium">Priority: Medium</option>
+                <option value="High">Priority: High</option>
+            </select>
+            <button class="btn-primary" onclick="addTask()"><i class="fa-solid fa-plus"></i> Add Task</button>
+        </div>
+
+        <!-- List of Tasks -->
+        <div class="task-list" id="taskList"></div>
+    </main>
+
+    <script>
+        // Store Tasks
+        let tasks = JSON.parse(localStorage.getItem('taskpulse_tasks')) || [];
+
+        function saveTasks() {
+            localStorage.setItem('taskpulse_tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function addTask() {
+            const titleInput = document.getElementById('taskTitle');
+            const priorityInput = document.getElementById('taskPriority');
+
+            if (!titleInput.value.trim()) return;
+
+            const newTask = {
+                id: Date.now(),
+                title: titleInput.value.trim(),
+                priority: priorityInput.value,
+                completed: false
+            };
+
+            tasks.push(newTask);
+            titleInput.value = '';
+            saveTasks();
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => 
+                task.id === id ? { ...task, completed: !task.completed } : task
+            );
+            saveTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+        }
+
+        function renderTasks() {
+            const listContainer = document.getElementById('taskList');
+            listContainer.innerHTML = '';
+
+            tasks.forEach(task => {
+                const item = document.createElement('div');
+                item.className = `task-item priority-${task.priority} ${task.completed ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <div class="task-left">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                        <span>${task.title}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash"></i></button>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // --- Night-Shift Sleep Calculator Feature ---
+        let currentStatusText = "";
+
+        function generateSleepStatus() {
+            const startVal = document.getElementById('sleepStart').value;
+            const endVal = document.getElementById('sleepEnd').value;
+
+            if (!startVal || !endVal) return;
+
+            const [startH, startM] = startVal.split(':').map(Number);
+            const [endH, endM] = endVal.split(':').map(Number);
+
+            let diffMs = (new Date(0, 0, 0, endH, endM) - new Date(0, 0, 0, startH, startM));
+            if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
+
+            const totalHours = (diffMs / (1000 * 60 * 60)).toFixed(1);
+
+            currentStatusText = `🌙 Night Shift Worker Sleeping: I'm sleeping daytime from ${startVal} to ${endVal} (${totalHours} hrs). Please DO NOT call or visit during these hours! 🚫📱`;
+
+            document.getElementById('statusMessage').innerText = currentStatusText;
+            document.getElementById('statusOutput').style.display = 'flex';
+        }
+
+        function copyStatus() {
+            if (!currentStatusText) return;
+            navigator.clipboard.writeText(currentStatusText);
+            alert('Sleep status copied to clipboard!');
+        }
+
+        function shareToWhatsApp() {
+            if (!currentStatusText) return;
+            const encodedText = encodeURIComponent(currentStatusText);
+            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+        }
+
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered!'))
+                    .catch(err => console.log('SW Registration Failed:', err));
+            });
+        }
+
+        // Initial Load
+        renderTasks();
+    </script>
+</body>
+</html>
